@@ -1,10 +1,10 @@
-# tf2CRF
+# tf2crf
 * a simple CRF layer for tensorflow 2 keras
 * support keras masking
 
 ## Install
 ```python
-$ pip install tf2CRF
+$ pip install tf2crf
 ```
 ## Tips
 It has been tested under tensorflow 2.1.0 and tensorflow-nightly.
