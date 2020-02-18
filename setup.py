@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name='tf2crf',
-    version='0.1.1',
-    description='',
+    version='0.1.2',
+    description='a crf layer for tensorflow 2 keras',
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT License',
