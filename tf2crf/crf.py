@@ -62,7 +62,7 @@ class CRF(tf.keras.layers.Layer):
         return K.in_train_phase(inputs, output)
 
     def loss(self, y_true, y_pred):
-        if self.sparse_target:
+        if not self.sparse_target:
             assert len(K.int_shape(y_true)) == 3
             y_true = K.argmax(y_true, axis=-1)
         log_likelihood, self.transitions = tfa.text.crf_log_likelihood(
