@@ -30,6 +30,7 @@ class CRF(tf.keras.layers.Layer):
         super(CRF, self).__init__(**kwargs)
         self.sparse_target = sparse_target
         self.sequence_lengths = None
+        self.mask = None
 
     def get_config(self):
         config = {
