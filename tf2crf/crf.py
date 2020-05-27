@@ -81,11 +81,9 @@ class CRF(tf.keras.layers.Layer):
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
 
-        viterbi_sequence, _ = tfa.text.crf_decode(
+        y_pred, _ = tfa.text.crf_decode(
             y_pred, self.transitions, self.sequence_lengths
         )
-        y_pred = K.cast(viterbi_sequence, y_true.dtype)
-        y_pred = K.argmax(y_pred, -1)
         y_true = K.cast(y_true, y_pred.dtype)
         # 逐标签取最大来粗略评测训练效果
         is_equal = K.equal(y_true, y_pred)
