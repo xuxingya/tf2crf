@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
-    long_description = fh.rea   d()
+    long_description = fh.read()
 
 requirements = ['tensorflow>=2.1.0', 'tensorflow_addons>=0.8.2']
 
