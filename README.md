@@ -11,7 +11,7 @@ It has been tested under tensorflow 2.1.0 and tensorflow-nightly.
 ## Example
 ```python
 from tf2CRF import CRF
-from tensorflow.keras import Input, Embedding, Bidirectional, GRU, Dense
+from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 
 inputs = Input(shape=(None,), dtype='int32')
