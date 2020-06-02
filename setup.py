@@ -1,7 +1,11 @@
 from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
-    long_description = fh.read()
+    long_description = fh.rea   d()
+
+requirements = ['tensorflow>=2.1.0', 'tensorflow_addons>=0.8.2']
+
+setup_requirements = ["bumpversion"]
 
 setup(
     name='tf2crf',
@@ -13,6 +17,7 @@ setup(
     url='https://github.com/xuxingya/tf2crf',
     author='xingya.xu',
     author_email='xingya.xu@gmail.com',
-    install_requires=['tensorflow>=2.1.0', 'tensorflow_addons>=0.8.2'],
+    install_requires=requirements,
+    setup_requires=setup_requirements,
     packages=find_packages()
 )
