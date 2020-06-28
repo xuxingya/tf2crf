@@ -31,6 +31,7 @@ class CRF(tf.keras.layers.Layer):
         self.sparse_target = sparse_target
         self.sequence_lengths = None
         self.mask = None
+        self.output_dim = None
 
     def get_config(self):
         config = {
@@ -42,6 +43,7 @@ class CRF(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         output_dim = input_shape[-1]
+        self.output_dim = output_dim
         assert len(input_shape) == 3
         self.transitions = self.add_weight(
             name="transitions",
