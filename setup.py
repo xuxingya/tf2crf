@@ -9,7 +9,7 @@ setup_requirements = ["bumpversion"]
 
 setup(
     name='tf2crf',
-    version='version="0.1.9"',
+    version='version="0.1.10"',
     description='a crf layer for tensorflow 2 keras',
     long_description=long_description,
     long_description_content_type="text/markdown",
