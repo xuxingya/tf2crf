@@ -54,10 +54,10 @@ class CRF(tf.keras.layers.Layer):
 
     def call(self, inputs, mask=None, **kwargs):
         if mask is not None:
-            self.sequence_lengths = K.sum(K.cast(mask, 'int64'), axis=-1)
+            self.sequence_lengths = K.sum(K.cast(mask, 'int32'), axis=-1)
             self.mask = mask
         else:
-            self.sequence_lengths = K.sum(K.ones_like(inputs[:,:,0], dtype='int64'), axis=-1)
+            self.sequence_lengths = K.sum(K.ones_like(inputs[:,:,0], dtype='int32'), axis=-1)
         viterbi_sequence, _ = tfa.text.crf_decode(
             inputs, self.transitions, self.sequence_lengths
         )
@@ -78,6 +78,7 @@ class CRF(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape[:2] + (self.out_dim, )
 
+    # use crf decode to estimate accuracy
     def accuracy(self, y_true, y_pred):
         mask = self.mask
         if len(K.int_shape(y_true)) == 3:
@@ -87,11 +88,27 @@ class CRF(tf.keras.layers.Layer):
             y_pred, self.transitions, self.sequence_lengths
         )
         y_true = K.cast(y_true, y_pred.dtype)
-        # 逐标签取最大来粗略评测训练效果
         is_equal = K.equal(y_true, y_pred)
-        is_equal = K.cast(is_equal, K.floatx())
+        is_equal = K.cast(is_equal, y_pred.dtype)
         if mask is None:
             return K.mean(is_equal)
         else:
-            mask = K.cast(mask, K.floatx())
+            mask = K.cast(mask, y_pred.dtype)
             return K.sum(is_equal * mask) / K.sum(mask)
+
+
+    # Use argmax to estimate accuracy
+    def fast_accuracy(self, y_true, y_pred):
+        mask = self.mask
+        if len(K.int_shape(y_true)) == 3:
+            y_true = K.argmax(y_true, axis=-1)
+        y_pred = K.argmax(y_pred, -1)
+        y_true = K.cast(y_true, y_pred.dtype)
+        # 逐标签取最大来粗略评测训练效果
+        isequal = K.equal(y_true, y_pred)
+        isequal = K.cast(isequal, y_pred.dtype)
+        if mask is None:
+            return K.mean(isequal)
+        else:
+            mask = K.cast(mask, y_pred.dtype)
+            return K.sum(isequal * mask) / K.sum(mask)
