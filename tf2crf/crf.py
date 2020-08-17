@@ -42,12 +42,11 @@ class CRF(tf.keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
-        output_dim = input_shape[-1]
-        self.output_dim = output_dim
+        self.output_dim = input_shape[-1]
         assert len(input_shape) == 3
         self.transitions = self.add_weight(
             name="transitions",
-            shape=[output_dim, output_dim],
+            shape=[input_shape[-1], input_shape[-1]],
             initializer="glorot_uniform",
             trainable=True
         )
@@ -61,7 +60,7 @@ class CRF(tf.keras.layers.Layer):
         viterbi_sequence, _ = tfa.text.crf_decode(
             inputs, self.transitions, self.sequence_lengths
         )
-        output = K.one_hot(viterbi_sequence, inputs.shape[-1])
+        output = K.cast(K.one_hot(viterbi_sequence, inputs.shape[-1]), inputs.dtype)
         return K.in_train_phase(inputs, output)
 
     def loss(self, y_true, y_pred):

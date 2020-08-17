@@ -1,6 +1,9 @@
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 from tf2crf import CRF
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
+policy = mixed_precision.Policy('mixed_float16')
+mixed_precision.set_policy(policy)
 
 def test():
     inputs = Input(shape=(None,), dtype='int32')
