@@ -7,7 +7,8 @@
 $ pip install tf2crf
 ```
 ## Tips
-It has been tested under tensorflow 2.1.0 and tensorflow-nightly.
+tensorflow >= 2.1.0
+Recommmend use the latest tensorflow-addons which is compatiable with your tf version.
 ## Example
 ```python
 from tf2CRF import CRF
