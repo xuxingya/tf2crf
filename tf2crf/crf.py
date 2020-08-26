@@ -43,30 +43,34 @@ class CRF(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         self.output_dim = input_shape[-1]
-        assert len(input_shape) == 3
+        # assert len(input_shape) == 3
         self.transitions = self.add_weight(
             name="transitions",
-            shape=[input_shape[-1], input_shape[-1]],
+            shape=[self.output_dim, self.output_dim],
             initializer="glorot_uniform",
             trainable=True
         )
 
-    def call(self, inputs, mask=None, **kwargs):
+    def call(self, inputs, mask=None, training=None):
         if mask is not None:
             self.sequence_lengths = K.sum(K.cast(mask, 'int32'), axis=-1)
             self.mask = mask
         else:
-            self.sequence_lengths = K.sum(K.ones_like(inputs[:,:,0], dtype='int32'), axis=-1)
+            self.sequence_lengths = K.sum(K.ones_like(inputs[:, :, 0], dtype='int32'), axis=-1)
         viterbi_sequence, _ = tfa.text.crf_decode(
             inputs, self.transitions, self.sequence_lengths
         )
-        output = K.cast(K.one_hot(viterbi_sequence, inputs.shape[-1]), inputs.dtype)
-        return K.in_train_phase(inputs, output)
+        if training:
+            return inputs
+        # tensorflow requires TRUE and FALSE branch has the same dtype
+        return K.cast(viterbi_sequence, inputs.dtype)
 
     def loss(self, y_true, y_pred):
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
-        log_likelihood, self.transitions = tfa.text.crf_log_likelihood(
+        if len(y_pred.shape) == 2:
+            y_pred = K.one_hot(K.cast(y_pred, 'int32'), self.output_dim)
+        log_likelihood, _ = tfa.text.crf_log_likelihood(
             y_pred,
             y_true,
             self.sequence_lengths,
@@ -75,17 +79,20 @@ class CRF(tf.keras.layers.Layer):
         return tf.reduce_mean(-log_likelihood)
 
     def compute_output_shape(self, input_shape):
-        return input_shape[:2] + (self.out_dim, )
+        return input_shape[:2] + (self.out_dim,)
+
+    def compute_mask(self, inputs, mask=None):
+        return mask
 
     # use crf decode to estimate accuracy
     def accuracy(self, y_true, y_pred):
         mask = self.mask
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
-
-        y_pred, _ = tfa.text.crf_decode(
-            y_pred, self.transitions, self.sequence_lengths
-        )
+        if len(y_pred.shape) == 3:
+            y_pred, _ = tfa.text.crf_decode(
+                y_pred, self.transitions, self.sequence_lengths
+            )
         y_true = K.cast(y_true, y_pred.dtype)
         is_equal = K.equal(y_true, y_pred)
         is_equal = K.cast(is_equal, y_pred.dtype)
@@ -94,20 +101,3 @@ class CRF(tf.keras.layers.Layer):
         else:
             mask = K.cast(mask, y_pred.dtype)
             return K.sum(is_equal * mask) / K.sum(mask)
-
-
-    # Use argmax to estimate accuracy
-    def fast_accuracy(self, y_true, y_pred):
-        mask = self.mask
-        if len(K.int_shape(y_true)) == 3:
-            y_true = K.argmax(y_true, axis=-1)
-        y_pred = K.argmax(y_pred, -1)
-        y_true = K.cast(y_true, y_pred.dtype)
-        # 逐标签取最大来粗略评测训练效果
-        isequal = K.equal(y_true, y_pred)
-        isequal = K.cast(isequal, y_pred.dtype)
-        if mask is None:
-            return K.mean(isequal)
-        else:
-            mask = K.cast(mask, y_pred.dtype)
-            return K.sum(isequal * mask) / K.sum(mask)
