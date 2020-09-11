@@ -57,11 +57,11 @@ class CRF(tf.keras.layers.Layer):
             self.mask = mask
         else:
             self.sequence_lengths = K.sum(K.ones_like(inputs[:, :, 0], dtype='int32'), axis=-1)
+        if training:
+            return inputs
         viterbi_sequence, _ = tfa.text.crf_decode(
             inputs, self.transitions, self.sequence_lengths
         )
-        if training:
-            return inputs
         # tensorflow requires TRUE and FALSE branch has the same dtype
         return K.cast(viterbi_sequence, inputs.dtype)
 
