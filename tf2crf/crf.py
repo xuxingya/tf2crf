@@ -97,7 +97,7 @@ class CRF(tf.keras.layers.Layer):
         is_equal = K.equal(y_true, y_pred)
         is_equal = K.cast(is_equal, y_pred.dtype)
         if mask is None:
-            return K.mean(is_equal)
+            return K.sum(is_equal) / K.sum(self.sequence_lengths)
         else:
             mask = K.cast(mask, y_pred.dtype)
             return K.sum(is_equal * mask) / K.sum(mask)
