@@ -66,6 +66,7 @@ class CRF(tf.keras.layers.Layer):
         return K.cast(viterbi_sequence, inputs.dtype)
 
     def loss(self, y_true, y_pred):
+
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
         if len(y_pred.shape) == 2:

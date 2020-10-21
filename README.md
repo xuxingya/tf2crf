@@ -56,6 +56,16 @@ x = [[5, 2, 3] * 3] * 10
 y = [[1, 2, 3] * 3] * 10
 
 model.fit(x=x, y=y, epochs=2, batch_size=2)
-model.save('model')
-
+```
+## How to save the model
+Currently, Loading the model directly is not supported. So you need to load the model weights instead.
+For example:
+```python
+tf.keras.models.save_model(model, '1')
+model.load_weights('1/variables/variables')
+```
+or
+```
+model.save_weights('model.h5')
+model.load_weights('model.h5')
 ```
