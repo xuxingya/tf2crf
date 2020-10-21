@@ -25,16 +25,17 @@ class CRF(tf.keras.layers.Layer):
         set to `True` or add a Masking Layer before this Layer
     """
 
-    def __init__(self, sparse_target=True, **kwargs):
-        self.transitions = None
+    def __init__(self, sparse_target=True, output_dim=None, transitions=None, sequence_lengths=None, mask=None, **kwargs):
         super(CRF, self).__init__(**kwargs)
         self.sparse_target = sparse_target
-        self.sequence_lengths = None
-        self.mask = None
-        self.output_dim = None
+        self.output_dim = output_dim
+        self.transitions = transitions
+        self.sequence_lengths = sequence_lengths
+        self.mask = mask
 
     def get_config(self):
         config = {
+            "sparse_target" : self.sparse_target,
             "output_dim": self.output_dim,
             "transitions": K.eval(self.transitions),
         }
