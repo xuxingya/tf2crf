@@ -9,7 +9,7 @@ tf.random.set_seed(200)
 
 def test_model():
     inputs = Input(shape=(None,), dtype='int32')
-    output = Embedding(100, 40, trainable=True, mask_zero=True)(inputs)
+    output = Embedding(100, 40, trainable=True, mask_zero=False)(inputs)
     output = Bidirectional(GRU(64, return_sequences=True))(output)
     output = Dense(9, activation=None)(output)
     crf = CRF(dtype='float32', name='crf')
@@ -37,4 +37,4 @@ def load_model():
 
 if __name__ == '__main__':
     train()
-    load_model()
+    # load_model()
