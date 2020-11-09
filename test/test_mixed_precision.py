@@ -18,7 +18,7 @@ def test():
     x = [[5, 2, 3] * 3] * 10
     y = [[1, 2, 3] * 3] * 10
 
-    model.fit(x=x, y=y, epochs=2, batch_size=2)
+    model.fit(x=x, y=y, epochs=10, batch_size=2)
     model.save('model')
 
 

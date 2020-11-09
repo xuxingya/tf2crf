@@ -41,7 +41,7 @@ class CRF(tf.keras.layers.Layer):
             )
         }
         base_config = super(CRF, self).get_config()
-        return dict(**base_config.items(), **config)
+        return {**base_config, **config}
 
     def build(self, input_shape):
         assert len(input_shape) == 3

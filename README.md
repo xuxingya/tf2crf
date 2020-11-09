@@ -37,7 +37,10 @@ model.save('model')
 ```
 
 ## Supoort for tensorflow mixed precision training
-Currently these is a bug in tensorflow-addons.text.crf, which causes a dtype error when using miex precision. This bug has been fixed in master branch, but is not released. so if you want to use mixed precision training. You need to **pip install tfa-nighly** instead.
+Currently these is a bug in tensorflow-addons.text.crf, which causes a dtype error when using miex precision. To correctly use mixed precison, you need to modify the line 488 of tensorflow_addons/text/crf.py to:
+```python
+crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params, dtype=inputs.dtype)
+```
 ## Example
 ```python
 from tf2CRF import CRF
