@@ -54,6 +54,7 @@ class CRF(tf.keras.layers.Layer):
 
     def call(self, inputs, mask=None, training=None):
         if mask is not None:
+            self.mask = mask
             self.sequence_lengths = K.sum(K.cast(mask, 'int32'), axis=-1)
         else:
             self.sequence_lengths = K.sum(K.ones_like(inputs[:, :, 0], dtype='int32'), axis=-1)
