@@ -6,9 +6,13 @@
 ```python
 $ pip install tf2crf
 ```
+## Attention
+A dense layer is needed before the CRF layer to convert inputs to shape (batch_size, timesteps, num_classes).
+The 'num_class' is how many tags or catogories the model predicts.
 ## Tips
 tensorflow >= 2.1.0
 Recommmend use the latest tensorflow-addons which is compatiable with your tf version.
+
 ## Example
 ```python
 from tf2CRF import CRF

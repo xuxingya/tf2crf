@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 import tensorflow.keras.backend as K
+from tensorflow_addons.utils import types
 
 
 class CRF(tf.keras.layers.Layer):
@@ -10,7 +11,7 @@ class CRF(tf.keras.layers.Layer):
     must be equal to the number of classes the CRF can predict (a linear layer is recommended).
 
     Args:
-        num_labels (int): the number of labels to tag each temporal input.
+        chain_initializer: the initialize method for transitions, default orthogonal.
 
     Input shape:
         nD tensor with shape `(batch_size, sentence length, num_classes)`.
@@ -25,37 +26,35 @@ class CRF(tf.keras.layers.Layer):
         set to `True` or add a Masking Layer before this Layer
     """
 
-    def __init__(self, sparse_target=True, output_dim=None, transitions=None, sequence_lengths=None, mask=None, **kwargs):
+    def __init__(self, chain_initializer: types.Initializer = "orthogonal", **kwargs):
         super(CRF, self).__init__(**kwargs)
-        self.sparse_target = sparse_target
-        self.output_dim = output_dim
-        self.transitions = transitions
-        self.sequence_lengths = sequence_lengths
-        self.mask = mask
+        self.chain_initializer = tf.keras.initializers.get(chain_initializer)
+        self.transitions = None
+        self.mask = None
+        self.sequence_lengths = None
+        self.supports_masking = True
 
     def get_config(self):
         config = {
-            "sparse_target": self.sparse_target,
-            "output_dim": self.output_dim,
-            "transitions": K.eval(self.transitions),
+            "chain_initializer": tf.keras.initializers.serialize(
+                self.chain_initializer
+            )
         }
         base_config = super(CRF, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return dict(**base_config.items(), **config)
 
     def build(self, input_shape):
-        self.output_dim = input_shape[-1]
-        # assert len(input_shape) == 3
+        assert len(input_shape) == 3
+        units = input_shape[-1]
         self.transitions = self.add_weight(
             name="transitions",
-            shape=[self.output_dim, self.output_dim],
-            initializer="glorot_uniform",
-            trainable=True
+            shape=[units, units],
+            initializer=self.chain_initializer,
         )
 
     def call(self, inputs, mask=None, training=None):
         if mask is not None:
             self.sequence_lengths = K.sum(K.cast(mask, 'int32'), axis=-1)
-            self.mask = mask
         else:
             self.sequence_lengths = K.sum(K.ones_like(inputs[:, :, 0], dtype='int32'), axis=-1)
         if training:
@@ -70,7 +69,7 @@ class CRF(tf.keras.layers.Layer):
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
         if len(y_pred.shape) == 2:
-            y_pred = K.one_hot(K.cast(y_pred, 'int32'), self.output_dim)
+            y_pred = K.one_hot(K.cast(y_pred, 'int32'), K.int_shape(self.transitions)[0])
         log_likelihood, _ = tfa.text.crf_log_likelihood(
             y_pred,
             y_true,
@@ -82,12 +81,8 @@ class CRF(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape[:2] + (self.out_dim,)
 
-    def compute_mask(self, inputs, mask=None):
-        return mask
-
     # use crf decode to estimate accuracy
     def accuracy(self, y_true, y_pred):
-        mask = self.mask
         if len(K.int_shape(y_true)) == 3:
             y_true = K.argmax(y_true, axis=-1)
         if len(y_pred.shape) == 3:
@@ -95,10 +90,9 @@ class CRF(tf.keras.layers.Layer):
                 y_pred, self.transitions, self.sequence_lengths
             )
         y_true = K.cast(y_true, y_pred.dtype)
-        is_equal = K.equal(y_true, y_pred)
-        is_equal = K.cast(is_equal, y_pred.dtype)
-        if mask is None:
-            return K.sum(is_equal) / K.cast(K.sum(self.sequence_lengths), y_pred.dtype)
+        is_equal = K.cast(K.equal(y_true, y_pred), y_pred.dtype)
+        if self.mask is None:
+            return K.sum(is_equal) / K.cast(K.sum(K.ones_like(y_true)), y_pred.dtype)
         else:
-            mask = K.cast(mask, y_pred.dtype)
+            mask = K.cast(self.mask, y_pred.dtype)
             return K.sum(is_equal * mask) / K.sum(mask)
