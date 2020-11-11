@@ -1,7 +1,7 @@
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 import tensorflow as tf
-from tf2crf import CRF
+from tf2crf import CRF, ModelWithCRFLoss, ModelWithCRFLossDSCLoss
 import numpy as np
 
 tf.random.set_seed(200)
@@ -14,10 +14,10 @@ def test_model():
     output = Dense(9, activation=None)(output)
     crf = CRF(dtype='float32', name='crf')
     output = crf(output)
-    model = Model(inputs, output)
-    model.compile(loss=crf.loss, optimizer='adam', metrics=[crf.accuracy])
+    base_model = Model(inputs, output)
+    model = ModelWithCRFLoss(base_model)
+    model.compile(optimizer='adam')
     return model
-
 
 def train():
     model = test_model()

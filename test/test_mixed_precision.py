@@ -1,6 +1,7 @@
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
-from tf2crf import CRF
+from tf2crf import CRF, ModelWithCRFLoss
+import numpy as np
 from tensorflow.keras.mixed_precision import experimental as mixed_precision
 policy = mixed_precision.Policy('mixed_float16')
 mixed_precision.set_policy(policy)
@@ -12,13 +13,14 @@ def test():
     output = Dense(9, activation=None)(output)
     crf = CRF(dtype='float32')
     output = crf(output)
-    model = Model(inputs, output)
-    model.compile(loss=crf.loss, optimizer='adam', metrics=[crf.accuracy])
+    base_model = Model(inputs, output)
+    model = ModelWithCRFLoss(base_model)
+    model.compile(optimizer='adam')
 
-    x = [[5, 2, 3] * 3] * 10
-    y = [[1, 2, 3] * 3] * 10
+    x = np.array([[5, 2, 3] * 3] * 100)
+    y = np.array([[1, 2, 3] * 3] * 100)
 
-    model.fit(x=x, y=y, epochs=10, batch_size=2)
+    model.fit(x=x, y=y, epochs=10, batch_size=4, validation_split=0.1)
     model.save('model')
 
 
