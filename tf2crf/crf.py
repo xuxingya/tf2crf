@@ -16,7 +16,13 @@ class CRF(tf.keras.layers.Layer):
         nD tensor with shape `(batch_size, sentence length, num_classes)`.
 
     Output shape:
-        nD tensor with shape: `(batch_size, sentence length, num_classes)`.
+        in training:
+            viterbi_sequence: the predicted sequence tags with shape `(batch_size, sentence length)`
+            inputs: the input tensor of the CRF layer with shape `(batch_size, sentence length, num_classes)`
+            sequence_lengths: true sequence length of inputs with shape `(batch_size)`
+            self.transitions: the internal transition parameters of CRF with shape `(num_classes, num_classes)`
+        in predicting:
+            viterbi_sequence: the predicted sequence tags with shape `(batch_size, sentence length)`
 
     Masking
         This layer supports keras masking for input data with a variable number
