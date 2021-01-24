@@ -21,7 +21,6 @@ Recommmend use the latest tensorflow-addons which is compatiable with your tf ve
 ## Example
 ```python
 import tensorflow as tf
-from tf2CRF import CRF
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 from tf2crf import CRF, ModelWithCRFLoss
@@ -52,7 +51,6 @@ crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params, dtype=inputs.dtype)
 ## Example
 ```python
 import tensorflow as tf
-from tf2CRF import CRF
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 from tf2crf import CRF, ModelWithCRFLoss
