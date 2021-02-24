@@ -9,10 +9,10 @@ $ pip install tf2crf
 
 ## Features
 * easy to use CRF layer with tensorflow
-* now support the ModelWithCRFLossDSCLoss with DSC loss, which increases f1 score with unbalanced data (refer the paper [Dice Loss for Data-imbalanced NLP Tasks](https://arxiv.org/pdf/1911.02855.pdf))
+* support mixed precision training
+* support the ModelWithCRFLossDSCLoss with DSC loss, which increases f1 score with unbalanced data (refer the paper [Dice Loss for Data-imbalanced NLP Tasks](https://arxiv.org/pdf/1911.02855.pdf))
 ## Attention
-* A dense layer is needed before the CRF layer to convert inputs to shape (batch_size, timesteps, num_classes).
-The 'num_class' is how many tags or catogories the model predicts.
+* Add internal kernel like CRF in keras_contrib, so now there is no need to stack a Dense layer before the CRF layer.
 * I have changed the previous way that putting loss function and accuracy function in the CRF layer. Instead I choose to use ModelWappers (refered to jaspersjsun), which is more clean and flexible.
 ## Tips
 tensorflow >= 2.1.0
