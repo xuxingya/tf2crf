@@ -19,14 +19,14 @@ def shape_list(x):
 
 class TFTester(unittest.TestCase):
 
-    def test_crf_no_kernel(self):
-        x = np.array([np.random.uniform(0, 1, (3, 9))] * 100)
-        crf = CRF()
-        result = crf(x)
-        assert shape_list(result[0]) == [100, 3]
-        assert shape_list(result[1]) == [100, 3, 9]
-        assert shape_list(result[2]) == [100]
-        assert shape_list(result[3]) == [9, 9]
+    # def test_crf_no_kernel(self):
+    #     x = np.array([np.random.uniform(0, 1, (3, 9))] * 100)
+    #     crf = CRF()
+    #     result = crf(x)
+    #     assert shape_list(result[0]) == [100, 3]
+    #     assert shape_list(result[1]) == [100, 3, 9]
+    #     assert shape_list(result[2]) == [100]
+    #     assert shape_list(result[3]) == [9, 9]
 
     def test_crf_kernel(self):
         x = np.array([np.random.uniform(0, 1, (3, 128))] * 100)

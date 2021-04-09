@@ -3,7 +3,7 @@ from typing import Union
 import tensorflow as tf
 from tensorflow_addons.text.crf import crf_log_likelihood
 
-from .other_losses import compute_dsc_loss
+from .losses import AdaptiveDscLoss
 
 
 def unpack_data(data):
@@ -91,10 +91,10 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
             base_model: The model including the CRF layer
             sparse_target: if the y label is sparse or one-hot, default True
             metric: the metric for training, default 'accuracy'. Warning: Currently tensorflow metrics like AUC need the output and y_true to be one-hot to cauculate, they are not supported.
-            alpha: parameter for DSC loss
+            **kwargs: args for AdaptiveDscLoss.
         """
 
-    def __init__(self, base_model, sparse_target=True, metric: Union[str, object] = 'accuracy', alpha=0.6):
+    def __init__(self, base_model, sparse_target=True, metric: Union[str, object] = 'accuracy', **kwargs):
         super().__init__()
         self.base_model = base_model
         self.sparse_target = sparse_target
@@ -107,7 +107,7 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
         else:
             self.metrics_fn = self.metric
         self.loss_tracker = tf.keras.metrics.Mean(name='loss')
-        self.alpha = alpha
+        self.dsc = AdaptiveDscLoss(**kwargs)
 
     def call(self, inputs, training=False):
         if training:
@@ -119,7 +119,7 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
         viterbi_sequence, potentials, sequence_length, chain_kernel = self(x, training=training)
         # we now add the CRF loss:
         crf_loss = -crf_log_likelihood(potentials, y, sequence_length, chain_kernel)[0]
-        ds_loss = compute_dsc_loss(potentials, y, self.alpha)
+        ds_loss = self.dsc(y, potentials, y)
         if sample_weight is not None:
             crf_loss = crf_loss * sample_weight[0]
             ds_loss = ds_loss * sample_weight[1]
