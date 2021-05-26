@@ -148,6 +148,10 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
 
     def test_step(self, data):
         x, y, sample_weight = unpack_data(data)
+        if self.sparse_target:
+            assert len(y.shape) == 2
+        else:
+            y = tf.argmax(y, axis=-1)
         viterbi_sequence, sequence_length, crf_loss, ds_loss = self.compute_loss(x, y, sample_weight, training=True)
         loss = crf_loss + ds_loss + tf.cast(tf.reduce_sum(self.losses), crf_loss.dtype)
         self.loss_tracker.update_state(loss)
