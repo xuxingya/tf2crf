@@ -21,7 +21,7 @@ Recommmend use the latest tensorflow-addons which is compatiable with your tf ve
 ## Example
 ```python
 import tensorflow as tf
-from tf2CRF import CRF
+from tf2crf import CRF
 from tensorflow.keras.layers import Input, Embedding, Bidirectional, GRU, Dense
 from tensorflow.keras.models import Model
 from tf2crf import CRF, ModelWithCRFLoss
@@ -29,7 +29,7 @@ from tf2crf import CRF, ModelWithCRFLoss
 inputs = Input(shape=(None,), dtype='int32')
 output = Embedding(100, 40, trainable=True, mask_zero=True)(inputs)
 output = Bidirectional(GRU(64, return_sequences=True))(output)
-crf = CRF(units=9, type='float32')
+crf = CRF(units=9, dtype='float32')
 output = crf(output)
 base_model = Model(inputs, output)
 model = ModelWithCRFLoss(base_model, sparse_target=True)
