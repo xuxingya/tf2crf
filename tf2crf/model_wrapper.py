@@ -27,6 +27,7 @@ class ModelWithCRFLoss(tf.keras.Model):
     def __init__(self, base_model, sparse_target=True, metric: Union[str, object] = 'accuracy'):
         super().__init__()
         self.base_model = base_model
+        self.model_layers = [layer for layer in self.base_model.layers]
         self.sparse_target = sparse_target
         self.metric = metric
         if isinstance(metric, str):
@@ -39,10 +40,13 @@ class ModelWithCRFLoss(tf.keras.Model):
         self.loss_tracker = tf.keras.metrics.Mean(name='loss')
 
     def call(self, inputs, training=False):
+        output = inputs
+        for layer in self.model_layers:
+            output = layer(output)
         if training:
-            return self.base_model(inputs)
+            return output
         else:
-            return self.base_model(inputs)[0]
+            return output[0]
 
     def compute_loss(self, x, y, training=False):
         viterbi_sequence, potentials, sequence_length, chain_kernel = self(x, training=training)
@@ -97,6 +101,7 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
     def __init__(self, base_model, sparse_target=True, metric: Union[str, object] = 'accuracy', alpha=0.6):
         super().__init__()
         self.base_model = base_model
+        self.model_layers = [layer for layer in self.base_model.layers]
         self.sparse_target = sparse_target
         self.metric = metric
         if isinstance(metric, str):
@@ -110,10 +115,13 @@ class ModelWithCRFLossDSCLoss(tf.keras.Model):
         self.alpha = alpha
 
     def call(self, inputs, training=False):
+        output = inputs
+        for layer in self.model_layers:
+            output = layer(output)
         if training:
-            return self.base_model(inputs)
+            return output
         else:
-            return self.base_model(inputs)[0]
+            return output[0]
 
     def compute_loss(self, x, y, sample_weight, training=False):
         viterbi_sequence, potentials, sequence_length, chain_kernel = self(x, training=training)

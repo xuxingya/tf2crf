@@ -11,3 +11,6 @@ clean-pyc: ## remove Python file artifacts
 
 test: ## run tests quickly with the default Python
 	python -m unittest discover -s tests
+
+install:
+	pip install -e .
